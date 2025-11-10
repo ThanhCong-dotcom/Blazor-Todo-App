@@ -1,0 +1,68 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedLocalStorage ProtectedLocalStore
+
+<table class="task-table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Deadline</th>
+            <th>Completed</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var task in Tasks)
+        {
+            <tr class="@GetRowClass(task)">
+                <td>@task.Name</td>
+                <td>@task.Deadline:yyyy-MM-dd</td>
+                <td>
+                    @if (task.IsCompleted)
+                    {
+                        <span class="badge-completed">Hoàn thành</span>
+                    }
+                    else
+                    {
+                        <span class="badge-pending">Chưa hoàn thành</span>
+                    }
+                </td>
+                <td>
+                    <button @onclick="() => OnEdit.InvokeAsync(task)" class="btn-edit">Edit</button>
+                    <button @onclick="() => MarkComplete(task)" class="btn-complete" disabled="@task.IsCompleted">
+                        @((task.IsCompleted) ? "Hoàn thành" : "Đánh dấu hoàn thành")
+                    </button>
+                    <button @onclick="() => RemoveTask(task)" class="btn-delete">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter] public List<TodoItem> Tasks { get; set; } = new();
+    [Parameter] public EventCallback<TodoItem> OnEdit { get; set; }
+
+    private string GetRowClass(TodoItem task) => task.IsCompleted ? "completed-task" : "";
+
+    private async Task RemoveTask(TodoItem task)
+    {
+        Tasks.RemoveAll(t => t.Id == task.Id);
+        await SaveTasks();
+    }
+
+    private async Task MarkComplete(TodoItem task)
+    {
+        var t = Tasks.FirstOrDefault(x => x.Id == task.Id);
+        if (t != null)
+        {
+            t.IsCompleted = true;
+            await SaveTasks();
+        }
+    }
+
+    private async Task SaveTasks()
+    {
+        await ProtectedLocalStore.SetAsync("tasks", Tasks);
+    }
+}

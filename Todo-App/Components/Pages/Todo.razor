@@ -1,0 +1,291 @@
+﻿@page "/protected-demo"
+@page "/todo"
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using System.ComponentModel.DataAnnotations
+@inject ProtectedLocalStorage ProtectedLocalStore
+@rendermode InteractiveServer
+
+<h3>Todo App</h3>
+
+<EditForm Model="@currentTask" OnValidSubmit="SaveTask">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-container">
+        <div class="form-row">
+            <label>Task Name:</label>
+            <InputText @bind-Value="currentTask.Name" class="input-field" />
+           
+        </div>
+        <div class="form-row">
+            <label>Deadline:</label>
+            <InputDate @bind-Value="currentTask.Deadline" class="input-field" />
+        </div>
+        <div class="form-row">
+            <label>Completed:</label>
+            <InputCheckbox @bind-Value="currentTask.IsCompleted" />
+        </div>
+        <div class="form-row">
+            <button type="submit" class="btn-save">Save Task</button>
+        </div>
+    </div>
+</EditForm>
+
+<hr />
+
+<h4>Task List</h4>
+@if (tasks.Count == 0)
+{
+    <p>No tasks yet.</p>
+}
+else
+{
+    <table class="task-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Deadline</th>
+                <th>Completed</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in tasks)
+            {
+                <tr class="@((task.IsCompleted ? "completed-task" : ""))">
+                    <td>@task.Name</td>
+                    <td>@task.Deadline:yyyy-MM-dd</td>
+                    <td>
+                        @if (task.IsCompleted)
+                        {
+                            <span class="badge-completed">Hoàn thành</span>
+                        }
+                        else
+                        {
+                            <span class="badge-pending">Chưa hoàn thành</span>
+                        }
+                    </td>
+                    <td>
+                        <button @onclick="() => EditTask(task)" class="btn-edit">Edit</button>
+                        <button @onclick="() => MarkComplete(task)" class="btn-complete" disabled="@task.IsCompleted">
+                            @((task.IsCompleted) ? "Hoàn thành" : "Đánh dấu hoàn thành")
+                        </button>
+                        <button @onclick="() => RemoveTask(task)" class="btn-delete">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private TodoItem currentTask = new();
+    private List<TodoItem> tasks = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadTasks();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadTasks()
+    {
+        var result = await ProtectedLocalStore.GetAsync<List<TodoItem>>("tasks");
+        if (result.Success && result.Value != null)
+        {
+            tasks = result.Value;
+        }
+    }
+
+    private async Task SaveTasks()
+    {
+        await ProtectedLocalStore.SetAsync("tasks", tasks);
+    }
+
+    private async Task SaveTask()
+    {
+        if (currentTask.Id == Guid.Empty)
+        {
+         
+            currentTask.Id = Guid.NewGuid();
+            tasks.Add(currentTask);
+        }
+        else
+        {
+           
+            var index = tasks.FindIndex(t => t.Id == currentTask.Id);
+            if (index >= 0)
+                tasks[index] = currentTask;
+        }
+
+        await SaveTasks();
+        currentTask = new TodoItem();
+    }
+
+    private void EditTask(TodoItem task)
+    {
+      
+        currentTask = new TodoItem
+        {
+            Id = task.Id,
+            Name = task.Name,
+            Deadline = task.Deadline,
+            IsCompleted = task.IsCompleted
+        };
+    }
+
+    private async Task RemoveTask(TodoItem task)
+    {
+        
+        tasks.RemoveAll(t => t.Id == task.Id);
+        await SaveTasks();
+    }
+
+    private async Task MarkComplete(TodoItem task)
+    {
+        var index = tasks.FindIndex(t => t.Id == task.Id);
+        if (index >= 0)
+        {
+            tasks[index].IsCompleted = true;
+            await SaveTasks();
+        }
+    }
+    
+   
+}
+
+<style>
+    .form-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 400px;
+    }
+
+    .form-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+        .form-row label {
+            width: 120px;
+            font-weight: bold;
+        }
+
+    .input-field {
+        flex: 1;
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .btn-save {
+        background-color: #4A90E2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        cursor: pointer;
+    }
+
+        .btn-save:hover {
+            background-color: #357ABD;
+        }
+
+    .task-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+        .task-table th, .task-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .task-table th {
+            text-align:center;
+            background-color: #f0f0f0;
+        }
+
+        .task-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .task-table tr.completed-task {
+            background-color: #d4edda;
+            text-decoration: line-through;
+            color: #155724;
+        }
+
+    .btn-edit {
+        background-color: #FFC107;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 8px;
+        cursor: pointer;
+        margin-right: 4px;
+    }
+
+        .btn-edit:hover {
+            background-color: #E0A800;
+        }
+
+    .btn-delete {
+        background-color: #E94B3C;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 8px;
+        cursor: pointer;
+    }
+
+        .btn-delete:hover {
+            background-color: #C43B2E;
+        }
+
+    .btn-complete {
+        background-color: #28A745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 8px;
+        cursor: pointer;
+        margin-right: 4px;
+    }
+
+        .btn-complete:hover {
+            background-color: #218838;
+        }
+
+        .btn-complete:disabled {
+            background-color: #6c757d;
+            cursor: default;
+        }
+
+    .badge-completed {
+        background-color: #28A745;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .badge-pending {
+        background-color: #007BFF;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+</style>

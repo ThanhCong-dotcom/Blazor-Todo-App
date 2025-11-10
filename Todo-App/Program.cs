@@ -1,11 +1,15 @@
-using Todo_App.Components;
+﻿
+using TodoApp.Components;
+ 
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
+// Đăng ký ProtectedLocalStorage
+ 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
