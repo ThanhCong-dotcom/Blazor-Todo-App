@@ -4,8 +4,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-// Đăng ký ProtectedLocalStorage
+    .AddInteractiveServerComponents().AddCircuitOptions(options => options.DetailedErrors = true); 
+ 
  
 var app = builder.Build();
 

@@ -60,7 +60,7 @@ else
 @code {
     private TodoItem currentTask = new();
     private List<TodoItem> tasks = new();
-    readonly string KeyStorge = "tasks";
+    readonly string KeyStorage = "tasks";
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -72,16 +72,30 @@ else
 
     private async Task LoadTasks()
     {
-        var result = await ProtectedLocalStore.GetAsync<List<TodoItem>>(KeyStorge);
-        if (result.Success && result.Value != null)
+        try
         {
-            tasks = result.Value;
+            var result = await ProtectedLocalStore.GetAsync<List<TodoItem>>(KeyStorage);
+
+            if (result.Success && result.Value != null)
+            {
+                tasks = result.Value;
+            }
+            else
+            {
+                tasks = new List<TodoItem>();  
+            }
+        }
+        catch
+        {
+            // Xử lý khi payload invalid / corrupt
+            tasks = new List<TodoItem>();
+            await ProtectedLocalStore.DeleteAsync(KeyStorage);
         }
     }
 
     private async Task SaveTasks()
     {
-        await ProtectedLocalStore.SetAsync(KeyStorge, tasks);
+        await ProtectedLocalStore.SetAsync(KeyStorage, tasks);
     }
 
     private async Task SaveTask()
