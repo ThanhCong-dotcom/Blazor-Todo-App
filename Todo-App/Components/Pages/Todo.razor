@@ -87,7 +87,6 @@ else
         }
         catch
         {
-            // Xử lý khi payload invalid / corrupt
             tasks = new List<TodoItem>();
             await ProtectedLocalStore.DeleteAsync(KeyStorage);
         }

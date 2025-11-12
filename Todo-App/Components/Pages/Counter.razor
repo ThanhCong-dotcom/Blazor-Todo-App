@@ -22,9 +22,16 @@ else
         if (firstRender)
         {
             _jsReady = true;
-
-            var result = await ProtectedLocalStore.GetAsync<int>("count");
-            count = result.Success ? result.Value : 0;
+            try
+            {
+                var result = await ProtectedLocalStore.GetAsync<int>("count");
+                count = result.Success ? result.Value : 0;
+            }
+            catch
+            {
+                count = 0;
+                await ProtectedLocalStore.DeleteAsync("count");
+            }
             StateHasChanged();
         }
     }
