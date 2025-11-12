@@ -9,7 +9,7 @@ public class TodoItem : IValidatableObject
     public string Name { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Deadline không được để trống")]
-    [DataType(DataType.Date)]
+    [DataType(DataType.DateTime)]
     public DateTime Deadline { get; set; } = DateTime.Today;
 
     public bool IsCompleted { get; set; } = false;

@@ -1,0 +1,70 @@
+﻿ 
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+    .form-row label {
+        width: 120px;
+        font-weight: bold;
+    }
+
+.input-field {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.btn-save {
+    background-color: #4A90E2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+    .btn-save:hover {
+        background-color: #357ABD;
+    }
+
+.task-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+    .task-table th, .task-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .task-table th {
+        text-align: center;
+        background-color: #f0f0f0;
+    }
+
+    .task-table tr:nth-child(even) {
+        background-color: #fafafa;
+    }
+
+    .task-table tr.completed-task {
+        background-color: #d4edda;
+        text-decoration: line-through;
+        color: #155724;
+    }
+
+
+
+ 

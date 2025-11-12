@@ -1,0 +1,33 @@
+﻿@using System.Globalization
+@inherits ComponentBase
+
+<tr class="@((Item?.IsCompleted == true ? "completed-task" : ""))">
+    <td>@Item?.Name</td>
+    <td>
+        @(Item!.Deadline.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture))
+    </td>
+    <td>
+        @if (Item?.IsCompleted == true)
+        {
+            <span class="badge-completed">Hoàn thành</span>
+        }
+        else
+        {
+            <span class="badge-pending">Chưa hoàn thành</span>
+        }
+    </td>
+    <td>
+        <button @onclick="() => OnEdit.InvokeAsync(Item!)" class="btn-edit">Edit</button>
+        <button @onclick="() => OnComplete.InvokeAsync(Item!)" class="btn-complete" disabled="@Item!.IsCompleted">
+            @(Item!.IsCompleted ? "Hoàn thành" : "Đánh dấu hoàn thành")
+        </button>
+        <button @onclick="() => OnDelete.InvokeAsync(Item!)" class="btn-delete">Delete</button>
+    </td>
+</tr>
+
+@code {
+    [Parameter] public TodoItem Item { get; set; } = default!;
+    [Parameter] public EventCallback<TodoItem> OnEdit { get; set; }
+    [Parameter] public EventCallback<TodoItem> OnComplete { get; set; }
+    [Parameter] public EventCallback<TodoItem> OnDelete { get; set; }
+}

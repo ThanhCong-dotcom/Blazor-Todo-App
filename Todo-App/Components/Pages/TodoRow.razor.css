@@ -1,0 +1,64 @@
+﻿
+
+.btn-edit {
+    background-color: #FFC107;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    margin-right: 4px;
+}
+
+    .btn-edit:hover {
+        background-color: #E0A800;
+    }
+
+.btn-delete {
+    background-color: #E94B3C;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+    .btn-delete:hover {
+        background-color: #C43B2E;
+    }
+
+.btn-complete {
+    background-color: #28A745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    margin-right: 4px;
+}
+
+    .btn-complete:hover {
+        background-color: #218838;
+    }
+
+    .btn-complete:disabled {
+        background-color: #6c757d;
+        cursor: default;
+    }
+.badge-completed {
+    background-color: #28A745;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.badge-pending {
+    background-color: #007BFF;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
