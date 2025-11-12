@@ -48,6 +48,7 @@
         border: 1px solid #ddd;
         padding: 8px;
         text-align: left;
+      
     }
 
     .task-table th {
@@ -56,7 +57,7 @@
     }
 
     .task-table tr:nth-child(even) {
-        background-color: #fafafa;
+        background-color: #4A90E2;
     }
 
     .task-table tr.completed-task {

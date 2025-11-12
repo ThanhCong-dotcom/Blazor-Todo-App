@@ -1,5 +1,4 @@
 ﻿@page "/counter"
-@rendermode InteractiveServer
 
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inject ProtectedLocalStorage ProtectedLocalStore
@@ -22,12 +21,10 @@ else
     {
         if (firstRender)
         {
-            // JSInterop đã sẵn sàng
             _jsReady = true;
 
             var result = await ProtectedLocalStore.GetAsync<int>("count");
             count = result.Success ? result.Value : 0;
-
             StateHasChanged();
         }
     }

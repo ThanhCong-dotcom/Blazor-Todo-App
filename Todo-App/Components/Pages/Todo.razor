@@ -1,10 +1,8 @@
 ﻿@page "/todo-list"
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
-@using System.ComponentModel.DataAnnotations
 @inject ProtectedLocalStorage ProtectedLocalStore
 
 <h3>Todo App</h3>
-
 <EditForm Model="@currentTask" OnValidSubmit="SaveTask">
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -15,6 +13,7 @@
             <InputText @bind-Value="currentTask.Name" class="input-field" />
         </div>
         <div class="form-row">
+            
             <label>Deadline:</label>
             <InputDate @bind-Value="currentTask.Deadline"  class="input-field" />
         </div>
@@ -36,7 +35,7 @@
 else
 {
     <table class="task-table">
-        <thead>
+        <thead class="table-light">
             <tr>
                 <th>Name</th>
                 <th>Deadline</th>
@@ -45,7 +44,8 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var task in tasks ?? [])
+
+            @foreach (var task in tasks )
             {
                     <TodoRow @key="task.Id"
                              Item="task"
@@ -93,7 +93,6 @@ else
         }
         else
         {
-           
             var index = tasks.FindIndex(t => t.Id == currentTask.Id);
             if (index >= 0)
                 tasks[index] = currentTask;

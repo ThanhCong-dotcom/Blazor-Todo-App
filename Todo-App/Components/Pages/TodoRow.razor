@@ -19,7 +19,7 @@
     <td>
         <button @onclick="() => OnEdit.InvokeAsync(Item!)" class="btn-edit">Edit</button>
         <button @onclick="() => OnComplete.InvokeAsync(Item!)" class="btn-complete" disabled="@Item!.IsCompleted">
-            @(Item!.IsCompleted ? "Hoàn thành" : "Đánh dấu hoàn thành")
+            @(Item!.IsCompleted ? "Đã Hoàn thành" : "Đánh dấu hoàn thành")
         </button>
         <button @onclick="() => OnDelete.InvokeAsync(Item!)" class="btn-delete">Delete</button>
     </td>

@@ -1,10 +1,7 @@
-﻿
-using TodoApp.Components;
- 
+﻿using TodoApp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
