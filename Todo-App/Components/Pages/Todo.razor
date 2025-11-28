@@ -1,12 +1,12 @@
 ﻿@page "/todo-list"
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using System.Collections.ObjectModel
 @inject ProtectedLocalStorage ProtectedLocalStore
 
 <h3>Todo App</h3>
 <EditForm Model="@currentTask" OnValidSubmit="SaveTask">
     <DataAnnotationsValidator />
     <ValidationSummary />
-
     <div class="form-container">
         <div class="form-row">
             <label>Task Name:</label>
@@ -37,16 +37,40 @@ else
     <table class="task-table">
         <thead class="table-light">
             <tr>
-                <th>Name</th>
-                <th>Deadline</th>
-                <th>Completed</th>
+                @foreach (var col in Columns)
+                {
+                    <th>@col.Header</th>
+                }
                 <th>Actions</th>
+            </tr>
+            <tr>
+                @foreach (var col in Columns)
+                {
+                    <th>
+                        <div class="filter-container">
+                            <input class="input-field filter-input"
+                                   type="@GetInputType(col.PropertyName)"
+                                   placeholder="@($"Search {col.Header}...")"
+                                   value="@GetFilterValue(col.PropertyName)"
+                                   @oninput="(ChangeEventArgs e) => OnFilterChanged(col.PropertyName, e.Value?.ToString())" />
+
+                            @if (!string.IsNullOrWhiteSpace(GetFilterValue(col.PropertyName)))
+                            {
+                                <button type="button"
+                                        title="Clear"
+                                        class="clear-btn"
+                                        @onclick="() => ClearFilter(col.PropertyName)">
+                                    X
+                                </button>
+                            }
+                        </div>
+                    </th>
+                }
             </tr>
         </thead>
         <tbody>
-
-            @foreach (var task in tasks )
-            {
+            @foreach (var task in FilteredTasks)
+            {   
                     <TodoRow @key="task.Id"
                              Item="task"
                              OnEdit="EditTask"
@@ -61,6 +85,107 @@ else
     private TodoItem currentTask = new();
     private List<TodoItem> tasks = new();
     readonly string KeyStorage = "tasks";
+
+    // Cấu hình cột
+    private record ColumnConfig(string Header, string PropertyName);
+
+    private List<ColumnConfig> Columns = new()
+    {
+        new("Name", nameof(TodoItem.Name) ),
+        new("Deadline", nameof(TodoItem.Deadline)),
+        new("Completed", nameof(TodoItem.IsCompleted))
+    };
+    //StringComparer.OrdinalIgnoreCase) //so sánh key, không phân biệt hoa thường
+    private Dictionary<string, string> _filters = new(StringComparer.OrdinalIgnoreCase);
+
+    private void ClearFilter(string propertyName)
+    {
+        if (_filters.ContainsKey(propertyName))
+            _filters[propertyName] = string.Empty;
+    }
+
+    private string GetInputType(string propertyName)
+    {
+
+        var prop = typeof(TodoItem).GetProperty(propertyName);
+        if (prop == null)
+            return "text";
+
+        var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+
+        if (type == typeof(string))
+            return "text";
+
+        if (type == typeof(DateTime))
+            return "date";
+
+        if (type == typeof(int)
+            || type == typeof(long)
+            || type == typeof(short)
+            || type == typeof(float)
+            || type == typeof(double)
+            || type == typeof(decimal))
+            return "number";
+
+        if (type == typeof(bool))
+            return "text";
+
+        return "text";
+    }
+
+
+    private string GetFilterValue(string propertyName)
+        => _filters.TryGetValue(propertyName, out var value) ? value : string.Empty;
+
+    private void OnFilterChanged(string propertyName, string? value)
+    {
+        value ??= string.Empty;
+        _filters[propertyName] = value;
+    }
+
+    private IEnumerable<TodoItem> FilteredTasks =>  tasks.Where(MatchAllFilters);
+
+    private bool MatchAllFilters(TodoItem item)
+    {
+        if (_filters.Count == 0) return true;
+
+        foreach (var (propName, filterValue) in _filters)
+        {
+            if (string.IsNullOrWhiteSpace(filterValue))
+                continue;
+
+            var prop = typeof(TodoItem).GetProperty(propName);
+            if (prop == null) continue;
+
+            var raw = prop.GetValue(item);
+
+            string text;
+
+            if (raw is DateTime dt)
+            {
+                text = dt.ToString("yyyy-MM-dd");
+            }
+            else if (raw is DateTime?)
+            {
+                var ndt = (DateTime?)raw;
+                text = ndt.HasValue ? ndt.Value.ToString("yyyy-MM-dd") : string.Empty;
+            }
+            else if (raw is bool b)
+            {
+                text = b.ToString().ToLower();
+            }
+            else
+            {
+                text = raw != null ? raw.ToString() : string.Empty;
+            }
+
+            if (!text.Contains(filterValue, StringComparison.OrdinalIgnoreCase))
+                return false;
+        }
+
+        return true;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -87,7 +212,6 @@ else
         }
         catch
         {
-            // Xử lý khi payload invalid / corrupt
             tasks = new List<TodoItem>();
             await ProtectedLocalStore.DeleteAsync(KeyStorage);
         }
@@ -139,6 +263,9 @@ else
         if (index >= 0)
         {
             tasks[index].IsCompleted = true;
+            var item = tasks[index];
+            tasks.RemoveAt(index);
+            tasks.Add(item); //luôn nằm cuối danh sách
             await SaveTasks();
         }
     }

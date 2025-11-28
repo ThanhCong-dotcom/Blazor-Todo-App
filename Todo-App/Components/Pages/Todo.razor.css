@@ -67,5 +67,30 @@
     }
 
 
+/*  input + nút clear */
+.filter-container {
+    position: relative;
+    display: inline-flex;
+    width: 100%;
+}
+
+/*  search trong header */
+.filter-input {
+    padding-right: 28px;
+    width: 100%;
+}
+
+/* Nút xóa */
+.clear-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    color: #888;
+}
 
  
