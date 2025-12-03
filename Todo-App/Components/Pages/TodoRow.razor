@@ -2,6 +2,10 @@
 @inherits ComponentBase
 
 <tr class="@((Item?.IsCompleted == true ? "completed-task" : ""))">
+    @if (NumericalOrder.HasValue)
+    {
+        <td style="width: 50px;">@NumericalOrder</td>
+    }
     <td>@Item?.Name</td>
     <td>
         @(Item!.Deadline.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture))
@@ -26,6 +30,7 @@
 </tr>
 
 @code {
+    [Parameter] public int? NumericalOrder { get; set; } 
     [Parameter] public TodoItem Item { get; set; } = default!;
     [Parameter] public EventCallback<TodoItem> OnEdit { get; set; }
     [Parameter] public EventCallback<TodoItem> OnComplete { get; set; }

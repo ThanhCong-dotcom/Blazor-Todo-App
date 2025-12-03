@@ -34,9 +34,30 @@
 }
 else
 {
-    <table class="task-table">
-        <thead class="table-light">
+    <div class="form-row" style="max-width: 350px; margin-bottom: 10px;">
+        <label style="margin-right: 8px;">Search all:</label>
+        <div class="filter-container" style="width: 100%;">
+            <input class="input-field filter-input"
+                   style="width: 100%;"
+                   placeholder="Search in all columns..."
+                   value="@_globalSearch"
+                   @oninput="(ChangeEventArgs e) => OnGlobalSearchChanged(e.Value?.ToString())" />
+
+            @if (!string.IsNullOrWhiteSpace(_globalSearch))
+            {
+                <button type="button"
+                        title="Clear"
+                        class="clear-btn"
+                        @onclick="ClearGlobalSearch">
+                    X
+                </button>
+            }
+        </div>
+    </div>
+    <table class="table table-bordered">
+        <thead class=" table-light text-center">
             <tr>
+               
                 @foreach (var col in Columns)
                 {
                     <th>@col.Header</th>
@@ -71,8 +92,9 @@ else
         <tbody>
             @foreach (var task in FilteredTasks)
             {   
-                    <TodoRow @key="task.Id"
-                             Item="task"
+
+                    <TodoRow @key="@task.Id"
+                             Item="@task"
                              OnEdit="EditTask"
                              OnComplete="MarkComplete"
                              OnDelete="RemoveTask" />
@@ -143,7 +165,9 @@ else
         _filters[propertyName] = value;
     }
 
-    private IEnumerable<TodoItem> FilteredTasks =>  tasks.Where(MatchAllFilters);
+    private List<TodoItem> FilteredTasks => tasks
+     .Where(t => MatchGlobalSearch(t) && MatchAllFilters(t))
+     .ToList();
 
     private bool MatchAllFilters(TodoItem item)
     {
@@ -159,7 +183,7 @@ else
 
             var raw = prop.GetValue(item);
 
-            string text;
+            string text=string.Empty;
 
             if (raw is DateTime dt)
             {
@@ -185,6 +209,67 @@ else
 
         return true;
     }
+
+    private string _globalSearch = string.Empty;
+
+    private void OnGlobalSearchChanged(string? value)
+    {
+        _globalSearch = value?.Trim() ?? string.Empty;
+    }
+
+    private void ClearGlobalSearch()
+    {
+        _globalSearch = string.Empty;
+    }
+
+
+    private bool MatchGlobalSearch(TodoItem item)
+    {
+        if (string.IsNullOrWhiteSpace(_globalSearch))
+            return true;
+
+        var keyword = _globalSearch.Trim();
+        
+        bool isSearchDate = DateTime.TryParse(keyword, out var searchDate);
+        //lọc các column đang show
+        foreach (var prop in typeof(TodoItem).GetProperties().Where(x=> Columns.Any(y=>y.PropertyName== x.Name)))
+        {
+            var raw = prop.GetValue(item);
+            if (raw == null) continue;
+
+            string text;
+          
+            if (raw is DateTime dt)
+            {
+           
+                if (isSearchDate && dt.Date == searchDate.Date)
+                    return true;
+                text = dt.ToString("yyyy-MM-dd");
+
+                if (text.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                continue;  
+            }
+           
+            else if (raw is bool b)
+            {
+                text = b.ToString().ToLower();  
+            }
+          
+            else
+            {
+                text = raw.ToString() ?? string.Empty;
+            }
+
+            if (text.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
+    }
+
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
